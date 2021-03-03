@@ -32,7 +32,6 @@ pub fn displayUsage() !void {
 const Arguments = struct {
     input: ?[]const u8 = null,
     output: ?[]const u8 = null,
-    fix_numeration: bool = false,
 };
 
 pub fn parse(allocator: *std.mem.Allocator) !Arguments {
