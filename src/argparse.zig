@@ -55,15 +55,15 @@ pub fn parse(allocator: *std.mem.Allocator) !Arguments {
             exit(0);
         } else if (eql(u8, "-i", arg) or eql(u8, "--input", arg)) {
             if (i + 1 >= args.len) {
-                _ = try out.write("Argument missing for 'input' option\n");
+                _ = try out.write("Error: Argument missing for 'input' option\n");
                 exit(0);
             }
             if (eql(u8, args[i + 1][0..1], "-")) {
-                _ = try out.write("Argument missing for 'input' option\n");
+                _ = try out.write("Error: Argument missing for 'input' option\n");
                 exit(0);
             }
             if (arguments.input) |_| {
-                _ = try out.write("'-i' or '--input' appear more than one time\n");
+                _ = try out.write("Error: '-i' or '--input' appear more than one time\n");
                 exit(0);
             } else {
                 arguments.input = args[i + 1][0..len(args[i + 1])];
@@ -71,25 +71,26 @@ pub fn parse(allocator: *std.mem.Allocator) !Arguments {
             }
         } else if (eql(u8, "-o", arg) or eql(u8, "--output", arg)) {
             if (i + 1 >= args.len) {
-                _ = try out.write("Argument missing for 'output' option\n");
+                _ = try out.write("Error: Argument missing for 'output' option\n");
                 exit(0);
             }
             if (eql(u8, args[i + 1][0..1], "-")) {
-                _ = try out.write("Argument missing for 'output' option\n");
+                _ = try out.write("Error: Argument missing for 'output' option\n");
                 exit(0);
             }
             if (arguments.output) |_| {
-                _ = try out.write("'-o' or '--output' appear more than one time\n");
+                _ = try out.write("Error: '-o' or '--output' appear more than one time\n");
                 exit(0);
             } else {
                 arguments.output = args[i + 1][0..len(args[i + 1])];
                 skip = 1;
             }
         }
-
-        //std.debug.print("i: {d}\targ: {s}\n", .{ i, arg });
     }
-    //std.debug.print("input: {s}\n", .{arguments.input});
-    //std.debug.print("output: {s}\n", .{arguments.output});
+
+    if (arguments.input == null) {
+        _ = try out.write("Error: Missing input file\n");
+        exit(0);
+    }
     return arguments;
 }
