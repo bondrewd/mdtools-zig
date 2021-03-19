@@ -1,9 +1,6 @@
 const std = @import("std");
 
 pub fn swap(comptime T: type, x: *T, y: *T) void {
-    const info = @typeInfo(T);
-    if (info != .Int and info != .Float) @compileError("'swap' only supports numeric types.");
-
     const tmp = x.*;
     x.* = y.*;
     y.* = tmp;
@@ -15,8 +12,10 @@ pub const Ordering = enum {
 };
 
 pub fn orderTriplet(comptime T: type, x: *T, y: *T, z: *T, ord: Ordering) void {
-    const info = @typeInfo(T);
-    if (info != .Int and info != .Float) @compileError("'orderTriplet' only supports numeric types.");
+    switch (@typeInfo(T)) {
+        .Int, Float => {},
+        else => @compileError("Expected int or float, found '" ++ @typeName(T) ++ "'"),
+    }
 
     switch (ord) {
         .Ascending => {

@@ -10,20 +10,20 @@ pub fn main() anyerror!void {
 
     var args = try argparse.parse(allocator);
 
-    var pdb_file = try pdb.PdbFile.initFromFile(fs.cwd(), args.input, allocator);
+    //var pdb_file = try pdb.PdbFile.initFromFile(fs.cwd(), args.input, allocator);
 
-    if (args.cog) |cog| try pdb_file.setCenterOfGeometry(cog);
-    if (args.com) |com| try pdb_file.setCenterOfMass(com);
-    if (args.align_axes) |axis| {
-        switch (axis) {
-            .X => try pdb_file.alignPrincipalAxes(.X),
-            .Y => try pdb_file.alignPrincipalAxes(.Y),
-            .Z => try pdb_file.alignPrincipalAxes(.Z),
-        }
-    }
+    //if (args.cog) |cog| try pdb_file.setCenterOfGeometry(cog);
+    //if (args.com) |com| try pdb_file.setCenterOfMass(com);
+    //if (args.align_axes) |axis| {
+    //switch (axis) {
+    //.X => try pdb_file.alignPrincipalAxes(.X),
+    //.Y => try pdb_file.alignPrincipalAxes(.Y),
+    //.Z => try pdb_file.alignPrincipalAxes(.Z),
+    //}
+    //}
 
-    const output = try fs.cwd().createFile(args.output, .{});
-    defer output.close();
+    //const output = try fs.cwd().createFile(args.output, .{});
+    //defer output.close();
 
-    try pdb_file.writePdbToFile(output);
+    //try pdb_file.writePdbToFile(output);
 }
