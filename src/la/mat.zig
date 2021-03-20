@@ -120,7 +120,7 @@ pub fn M(comptime T: type, comptime m: usize, comptime n: usize) type {
             return rslt;
         }
 
-        const Order = enum { Row, Col };
+        const Order = enum { RowMajor, ColumnMajor };
 
         pub fn toVec(self: Self, order: Order) V(T, m * n) {
             var v = V(T, m * n).new();
@@ -129,7 +129,7 @@ pub fn M(comptime T: type, comptime m: usize, comptime n: usize) type {
             var j: usize = 0;
 
             switch (order) {
-                .Row => {
+                .RowMajor => {
                     while (i < m) : (i += 1) {
                         j = 0;
                         while (j < n) : (j += 1) {
@@ -137,7 +137,7 @@ pub fn M(comptime T: type, comptime m: usize, comptime n: usize) type {
                         }
                     }
                 },
-                .Col => {
+                .ColumnMajor => {
                     while (i < n) : (i += 1) {
                         j = 0;
                         while (j < m) : (j += 1) {
@@ -343,8 +343,8 @@ test "M to vector" {
         .{ 3.0, 4.0, 5.0 },
     });
 
-    testing.expectEqual(a.toVec(.Row), V(f32, 6).initFromArray(.{ 0, 1, 2, 3, 4, 5 }));
-    testing.expectEqual(a.toVec(.Col), V(f32, 6).initFromArray(.{ 0, 3, 1, 4, 2, 5 }));
+    testing.expectEqual(a.toVec(.RowMajor), V(f32, 6).initFromArray(.{ 0, 1, 2, 3, 4, 5 }));
+    testing.expectEqual(a.toVec(.ColumnMajor), V(f32, 6).initFromArray(.{ 0, 3, 1, 4, 2, 5 }));
 }
 
 pub fn identity(comptime T: type, comptime n: usize) comptime M(T, n, n) {
