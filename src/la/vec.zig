@@ -90,28 +90,9 @@ pub fn V(comptime T: type, comptime n: usize) type {
             return rslt;
         }
 
-        const Order = enum { Row, Col };
-
-        fn AsMat(comptime order: Order) type {
-            switch (order) {
-                .Row => return M(T, 1, n),
-                .Col => return M(T, n, 1),
-            }
-        }
-
-        pub fn asMat(self: Self, comptime order: Order) AsMat(order) {
-            var m = AsMat(order).new();
-
-            switch (order) {
-                .Row => m.data[0] = self.data,
-                .Col => {
-                    var i: usize = 0;
-                    while (i < n) : (i += 1) {
-                        m.data[i][0] = self.data[i];
-                    }
-                },
-            }
-
+        pub fn asMat(self: Self) M(T, n, 1) {
+            var m = M(T, n, 1).new();
+            for (self.data) |element, i| m.data[i][0] = element;
             return m;
         }
     };
@@ -228,6 +209,5 @@ test "Vec swizzling" {
 test "Vec as matrix" {
     var v = V(f32, 3).initFromArray(.{ 0, 1, 2 });
 
-    testing.expectEqual(v.asMat(.Row), M(f32, 1, 3).initFromArray([1][3]f32{.{ 0, 1, 2 }}));
-    testing.expectEqual(v.asMat(.Col), M(f32, 3, 1).initFromArray([3][1]f32{ .{0}, .{1}, .{2} }));
+    testing.expectEqual(v.asMat(), M(f32, 3, 1).initFromArray([3][1]f32{ .{0}, .{1}, .{2} }));
 }
