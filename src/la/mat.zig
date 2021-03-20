@@ -337,7 +337,7 @@ test "M swizzling" {
     }));
 }
 
-test "M as vector" {
+test "M to vector" {
     var a = M(f32, 2, 3).initFromArray(.{
         .{ 0.0, 1.0, 2.0 },
         .{ 3.0, 4.0, 5.0 },
