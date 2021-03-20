@@ -120,7 +120,7 @@ pub fn M(comptime T: type, comptime m: usize, comptime n: usize) type {
             return rslt;
         }
 
-        const Order = enum { RowMajor, ColumnMajor };
+        pub const Order = enum { RowMajor, ColumnMajor };
 
         pub fn toVec(self: Self, order: Order) V(T, m * n) {
             var v = V(T, m * n).new();
