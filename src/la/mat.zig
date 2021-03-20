@@ -122,7 +122,7 @@ pub fn M(comptime T: type, comptime m: usize, comptime n: usize) type {
 
         const Order = enum { Row, Col };
 
-        pub fn asVec(self: Self, order: Order) V(T, m * n) {
+        pub fn toVec(self: Self, order: Order) V(T, m * n) {
             var v = V(T, m * n).new();
 
             var i: usize = 0;
@@ -343,8 +343,8 @@ test "M as vector" {
         .{ 3.0, 4.0, 5.0 },
     });
 
-    testing.expectEqual(a.asVec(.Row), V(f32, 6).initFromArray(.{ 0, 1, 2, 3, 4, 5 }));
-    testing.expectEqual(a.asVec(.Col), V(f32, 6).initFromArray(.{ 0, 3, 1, 4, 2, 5 }));
+    testing.expectEqual(a.toVec(.Row), V(f32, 6).initFromArray(.{ 0, 1, 2, 3, 4, 5 }));
+    testing.expectEqual(a.toVec(.Col), V(f32, 6).initFromArray(.{ 0, 3, 1, 4, 2, 5 }));
 }
 
 pub fn identity(comptime T: type, comptime n: usize) comptime M(T, n, n) {

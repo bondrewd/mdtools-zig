@@ -90,7 +90,7 @@ pub fn V(comptime T: type, comptime n: usize) type {
             return rslt;
         }
 
-        pub fn asMat(self: Self) M(T, n, 1) {
+        pub fn toMat(self: Self) M(T, n, 1) {
             var m = M(T, n, 1).new();
             for (self.data) |element, i| m.data[i][0] = element;
             return m;
@@ -206,8 +206,8 @@ test "Vec swizzling" {
     testing.expectEqual(rslt.data, [4]f64{ 2.0, 3.0, 0.0, 1.0 });
 }
 
-test "Vec as matrix" {
+test "Vec to matrix" {
     var v = V(f32, 3).initFromArray(.{ 0, 1, 2 });
 
-    testing.expectEqual(v.asMat(), M(f32, 3, 1).initFromArray([3][1]f32{ .{0}, .{1}, .{2} }));
+    testing.expectEqual(v.toMat(), M(f32, 3, 1).initFromArray([3][1]f32{ .{0}, .{1}, .{2} }));
 }

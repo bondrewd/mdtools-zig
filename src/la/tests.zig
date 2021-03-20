@@ -18,8 +18,8 @@ test "Matrix vector multiplication" {
     });
 
     const v = V(f32, 3).initFromArray(.{ 0, 1, 2 });
-    const a = v.asMat().transpose();
-    const b = v.asMat();
+    const a = v.toMat().transpose();
+    const b = v.toMat();
 
     const scalar = a.matMul(m).matMul(b);
     testing.expectEqual(scalar, M(f32, 1, 1).initFromArray(.{.{5}}));
