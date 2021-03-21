@@ -2,14 +2,22 @@ const std = @import("std");
 const mem = std.mem;
 const testing = std.testing;
 const Allocator = mem.Allocator;
+const AtomRecord = @import("pdb/atom_record.zig").AtomRecord;
 
 const Pdb = struct {
     allocator: *Allocator,
+    records: std.ArrayList(Record),
 
     const Self = @This();
 
+    const RecordTag = enum { AtomRecord };
+    const Record = union(RecordTag) { AtomRecord };
+
     pub fn init(allocator: *Allocator) Self {
-        return .{ .allocator = allocator };
+        return .{
+            .allocator = allocator,
+            .records = std.ArrayList(Record).init(allocator),
+        };
     }
 
     pub fn deinit(self: *Self) void {
@@ -30,6 +38,10 @@ const Pdb = struct {
             // const record = try parseRecord(data);
             // try self.records.append(record);
         }
+    }
+
+    pub fn parse(buf: []const u8) void {
+        {}
     }
 };
 
