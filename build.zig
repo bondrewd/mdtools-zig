@@ -14,6 +14,8 @@ pub fn build(b: *Builder) void {
     const exe = b.addExecutable("mdtools", "src/main.zig");
     exe.setTarget(target);
     exe.setBuildMode(mode);
+    exe.linkSystemLibrary("ncurses");
+    exe.linkLibC();
     exe.setOutputDir("./bin");
     exe.install();
 

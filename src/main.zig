@@ -1,14 +1,15 @@
 const std = @import("std");
 const fs = std.fs;
-const pdb = @import("./pdb.zig");
-const argparse = @import("./argparse.zig");
+const pdb = @import("pdb.zig");
+const Parser = @import("argparse.zig").Parser;
 
 pub fn main() anyerror!void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     var allocator = &arena.allocator;
 
-    var args = try argparse.parse(allocator);
+    var args = try Parser.parse(allocator);
+    defer Parser.deinit(args);
 
     //var pdb_file = try pdb.PdbFile.initFromFile(fs.cwd(), args.input, allocator);
 
