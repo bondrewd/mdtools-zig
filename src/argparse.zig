@@ -3,7 +3,6 @@ const io = std.io;
 const fmt = std.fmt;
 const eql = std.mem.eql;
 const len = std.mem.len;
-const exit = std.os.exit;
 const ansi = @import("ansi.zig");
 const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
@@ -17,14 +16,14 @@ const blue = ansi.fg_blue;
 const green = ansi.fg_green;
 const yellow = ansi.fg_yellow;
 
-const ParserConfig = struct {
+pub const ParserConfig = struct {
     bin_name: []const u8,
     bin_info: []const u8,
     bin_usage: []const u8,
     bin_version: struct { major: u8, minor: u8, patch: u8 },
 };
 
-const ParserOption = struct {
+pub const ParserOption = struct {
     name: []const u8,
     long: ?[]const u8 = null,
     short: ?[]const u8 = null,
@@ -34,22 +33,26 @@ const ParserOption = struct {
     takes: enum { None, One, Many } = .None,
 };
 
-fn ArgumentParser(comptime config: ParserConfig, comptime options: []const ParserOption) type {
+pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const ParserOption) type {
     return struct {
-        const Self = @This();
-
-        pub fn displayUsage() !void {
+        pub fn displayVersion() !void {
             const stdout = io.getStdOut().writer();
 
-            // binary version
+            // Binary version
             const name = config.bin_name;
             const major = config.bin_version.major;
             const minor = config.bin_version.minor;
             const patch = config.bin_version.patch;
-            try stdout.print(bold ++ green ++ "{s}" ++ blue ++ " {d}.{d}.{d}\n\n" ++ reset, .{ name, major, minor, patch });
+            try stdout.print(bold ++ green ++ "{s}" ++ blue ++ " {d}.{d}.{d}\n" ++ reset, .{ name, major, minor, patch });
+        }
+        pub fn displayUsage() !void {
+            const stdout = io.getStdOut().writer();
+
+            // binary version
+            try displayVersion();
 
             // binary info
-            try stdout.writeAll(config.bin_info ++ "\n\n");
+            try stdout.writeAll("\n" ++ config.bin_info ++ "\n\n");
 
             // bin usage
             try stdout.writeAll(bold ++ yellow ++ "USAGE\n" ++ reset);
@@ -171,60 +174,3 @@ fn ArgumentParser(comptime config: ParserConfig, comptime options: []const Parse
         }
     };
 }
-
-pub const Parser = ArgumentParser(.{
-    .bin_name = "mdtools",
-    .bin_info = "Tools for manipulating Molecular Dynamics (MD) files.",
-    .bin_usage = "./mdtools OPTION [OPTION...]",
-    .bin_version = .{ .major = 0, .minor = 1, .patch = 0 },
-}, &[_]ParserOption{
-    .{
-        .name = "input",
-        .long = "--input",
-        .short = "-i",
-        .description = "Input file name",
-        .metavar = "<FILE>",
-        .argument_type = []const u8,
-        .takes = .One,
-    },
-    .{
-        .name = "output",
-        .long = "--output",
-        .short = "-o",
-        .description = "Output file name (Default: mdtools.out)",
-        .metavar = "<FILE>",
-        .argument_type = []const u8,
-        .takes = .One,
-    },
-    .{
-        .name = "index",
-        .long = "--index",
-        .short = "-x",
-        .description = "Index file name (Default: mdtools.x)",
-        .metavar = "<FILE>",
-        .argument_type = []const u8,
-        .takes = .One,
-    },
-    .{
-        .name = "translate_com",
-        .long = "--translate-com",
-        .description = "Translate center of mass",
-        .metavar = "<X> <Y> <Y>",
-        .argument_type = f32,
-        .takes = .Many,
-    },
-    .{
-        .name = "version",
-        .long = "--version",
-        .short = "-v",
-        .description = "Print mdtools version and exit",
-        .argument_type = bool,
-    },
-    .{
-        .name = "help",
-        .long = "--help",
-        .short = "-h",
-        .description = "Display this and exit",
-        .argument_type = bool,
-    },
-});
