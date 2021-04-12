@@ -12,6 +12,7 @@ const Declaration = TypeInfo.Declaration;
 
 const reset = ansi.reset;
 const bold = ansi.txt_bold;
+const red = ansi.fg_red;
 const blue = ansi.fg_blue;
 const green = ansi.fg_green;
 const yellow = ansi.fg_yellow;
@@ -21,6 +22,7 @@ pub const ParserConfig = struct {
     bin_info: []const u8,
     bin_usage: []const u8,
     bin_version: struct { major: u8, minor: u8, patch: u8 },
+    display_help: bool = false,
 };
 
 pub const ParserOption = struct {
@@ -36,6 +38,7 @@ pub const ParserOption = struct {
 pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const ParserOption) type {
     return struct {
         pub fn displayVersion() !void {
+            // Standard output writer
             const stdout = io.getStdOut().writer();
 
             // Binary version
@@ -43,7 +46,7 @@ pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const P
             const major = config.bin_version.major;
             const minor = config.bin_version.minor;
             const patch = config.bin_version.patch;
-            try stdout.print(bold ++ green ++ "{s}" ++ blue ++ " {d}.{d}.{d}\n" ++ reset, .{ name, major, minor, patch });
+            try stdout.print(bold ++ green ++ "{s}" ++ bold ++ blue ++ " {d}.{d}.{d}\n" ++ reset, .{ name, major, minor, patch });
         }
         pub fn displayUsage() !void {
             const stdout = io.getStdOut().writer();
@@ -101,6 +104,9 @@ pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const P
         };
 
         pub fn parse(allocator: *Allocator) !ParserResult {
+            // Standard output writer
+            const stdout = io.getStdOut().writer();
+
             // Initialize parser result
             var parsed_args: ParserResult = undefined;
             inline for (options) |option| {
@@ -111,9 +117,11 @@ pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const P
                 };
             }
 
+            // Initialize argument parser flags
+            var parsing_done = [_]bool{false} ** options.len;
+
             // Get arguments
             var arguments = std.os.argv;
-            if (arguments.len == 1) return parsed_args;
 
             // Parse arguments
             var i: usize = 1;
@@ -122,12 +130,39 @@ pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const P
                 const arg = arguments[i][0..len(arguments[i])];
 
                 // Iterate over all the options
-                inline for (options) |option| {
+                inline for (options) |option, id| {
                     if (eql(u8, arg, option.short orelse "") or eql(u8, arg, option.long orelse "")) {
+                        if (parsing_done[id]) {
+                            if (comptime config.display_help) {
+                                const long = option.long orelse "";
+                                const short = option.short orelse "";
+                                const separator = if (option.short != null) (if (option.long != null) ", " else "") else "";
+
+                                const long_fmt = bold ++ green ++ long ++ reset;
+                                const short_fmt = bold ++ green ++ short ++ reset;
+                                const error_fmt = bold ++ red ++ "Error:" ++ reset;
+                                try stdout.writeAll(error_fmt ++ " Option " ++ short_fmt ++ separator ++ long_fmt ++ " appears more than one time\n");
+                            }
+
+                            return error.OptionAppearsTwoTimes;
+                        }
                         switch (option.takes) {
                             .None => @field(parsed_args, option.name) = true,
                             .One => {
-                                if (arguments.len <= i + 1) return error.MissingArgument;
+                                if (arguments.len <= i + 1) {
+                                    if (comptime config.display_help) {
+                                        const long = option.long orelse "";
+                                        const short = option.short orelse "";
+                                        const separator = if (option.short != null) (if (option.long != null) ", " else "") else "";
+
+                                        const long_fmt = bold ++ green ++ long ++ reset;
+                                        const short_fmt = bold ++ green ++ short ++ reset;
+                                        const error_fmt = bold ++ red ++ "Error:" ++ reset;
+                                        try stdout.writeAll(error_fmt ++ " Missing argument for option " ++ short_fmt ++ separator ++ long_fmt ++ "\n");
+                                    }
+
+                                    return error.MissingArgument;
+                                }
                                 const next_arg = arguments[i + 1][0..len(arguments[i + 1])];
                                 switch (@typeInfo(option.argument_type)) {
                                     .Int => @field(parsed_args, option.name) = try fmt.parseInt(option.argument_type, next_arg),
@@ -138,11 +173,25 @@ pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const P
                                 i += 1;
                             },
                             .Many => {
+                                if (arguments.len <= i + 1) {
+                                    if (comptime config.display_help) {
+                                        const long = option.long orelse "";
+                                        const short = option.short orelse "";
+                                        const separator = if (option.short != null) (if (option.long != null) ", " else "") else "";
+
+                                        const long_fmt = bold ++ green ++ long ++ reset;
+                                        const short_fmt = bold ++ green ++ short ++ reset;
+                                        const error_fmt = bold ++ red ++ "Error:" ++ reset;
+                                        try stdout.writeAll(error_fmt ++ " Missing argument for option " ++ short_fmt ++ separator ++ long_fmt ++ "\n");
+                                    }
+
+                                    return error.MissingArgument;
+                                }
                                 var j: usize = 1;
                                 search_loop: while (arguments.len > i + j) : (j += 1) {
                                     const next_arg = arguments[i + j][0..len(arguments[i + j])];
                                     inline for (options) |opt| {
-                                        if (eql(u8, next_arg, option.short orelse "") or eql(u8, next_arg, option.long orelse "")) break :search_loop;
+                                        if (eql(u8, next_arg, opt.short orelse "") or eql(u8, next_arg, opt.long orelse "")) break :search_loop;
                                     }
                                     switch (@typeInfo(option.argument_type)) {
                                         .Int => try @field(parsed_args, option.name).append(try fmt.parseInt(option.argument_type, next_arg)),
@@ -151,11 +200,18 @@ pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const P
                                         else => unreachable,
                                     }
                                 }
-                                i = i + j;
+                                i = i + j - 1;
                             },
                         }
+                        parsing_done[id] = true;
                         continue :argument_loop;
                     }
+                }
+
+                if (comptime config.display_help) {
+                    const arg_fmt = bold ++ green ++ "{s}" ++ reset;
+                    const error_fmt = bold ++ red ++ "Error:" ++ reset;
+                    try stdout.print(error_fmt ++ " Unknown argument " ++ arg_fmt ++ "\n", .{arg});
                 }
 
                 return error.UnknownArgument;

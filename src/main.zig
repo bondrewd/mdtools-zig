@@ -9,7 +9,7 @@ pub fn main() anyerror!void {
     defer arena.deinit();
     var allocator = &arena.allocator;
 
-    var args = try ArgumentParser.parse(allocator);
+    var args = ArgumentParser.parse(allocator) catch return;
     defer ArgumentParser.deinit(args);
 
     if (args.help) {
@@ -28,6 +28,7 @@ const ArgumentParser = argparse.ArgumentParser(.{
     .bin_info = "Tools for manipulating Molecular Dynamics (MD) files.",
     .bin_usage = "./mdtools OPTION [OPTION...]",
     .bin_version = .{ .major = 0, .minor = 1, .patch = 0 },
+    .display_help = true,
 }, &[_]argparse.ParserOption{
     .{
         .name = "input",
@@ -36,7 +37,7 @@ const ArgumentParser = argparse.ArgumentParser(.{
         .description = "Input file name",
         .metavar = "<FILE>",
         .argument_type = []const u8,
-        .takes = .One,
+        .takes = .Many,
     },
     .{
         .name = "output",
