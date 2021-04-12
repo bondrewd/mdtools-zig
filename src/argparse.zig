@@ -6,6 +6,7 @@ const len = std.mem.len;
 const ansi = @import("ansi.zig");
 const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
+const WriteError = std.os.WriteError;
 const TypeInfo = std.builtin.TypeInfo;
 const StructField = TypeInfo.StructField;
 const Declaration = TypeInfo.Declaration;
@@ -37,7 +38,14 @@ pub const ParserOption = struct {
 
 pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const ParserOption) type {
     return struct {
-        pub fn displayVersion() !void {
+        pub const ParserError = error{
+            OptionAppearsTwoTimes,
+            MissingArgument,
+            UnknownArgument,
+            NoArgument,
+        };
+
+        pub fn displayVersion() WriteError!void {
             // Standard output writer
             const stdout = io.getStdOut().writer();
 
@@ -48,7 +56,7 @@ pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const P
             const patch = config.bin_version.patch;
             try stdout.print(bold ++ green ++ "{s}" ++ bold ++ blue ++ " {d}.{d}.{d}\n" ++ reset, .{ name, major, minor, patch });
         }
-        pub fn displayUsage() !void {
+        pub fn displayUsage() WriteError!void {
             const stdout = io.getStdOut().writer();
 
             // binary version
@@ -103,7 +111,7 @@ pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const P
             } });
         };
 
-        pub fn parse(allocator: *Allocator) !ParserResult {
+        pub fn parse(allocator: *Allocator) (ParserError || WriteError || error{OutOfMemory})!ParserResult {
             // Standard output writer
             const stdout = io.getStdOut().writer();
 
@@ -122,6 +130,14 @@ pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const P
 
             // Get arguments
             var arguments = std.os.argv;
+            if (arguments.len == 1 and options.len > 0) {
+                if (comptime config.display_help) {
+                    const error_fmt = bold ++ red ++ "Error:" ++ reset;
+                    try stdout.writeAll(error_fmt ++ " Executed without arguments\n");
+                }
+
+                return error.NoArgument;
+            }
 
             // Parse arguments
             var i: usize = 1;

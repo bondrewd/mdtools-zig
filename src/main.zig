@@ -4,12 +4,33 @@ const pdb = @import("pdb.zig");
 const ansi = @import("ansi.zig");
 const argparse = @import("argparse.zig");
 
+const reset = ansi.reset;
+const bold = ansi.txt_bold;
+const green = ansi.fg_green;
+
 pub fn main() anyerror!void {
+    // Initialize allocator
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     var allocator = &arena.allocator;
 
-    var args = ArgumentParser.parse(allocator) catch return;
+    // Get std out writer
+    const stdout = std.io.getStdOut().writer();
+
+    var args = ArgumentParser.parse(allocator) catch |err| switch (err) {
+        error.OptionAppearsTwoTimes, error.MissingArgument, error.UnknownArgument => {
+            try stdout.writeAll("Try " ++ bold ++ green ++ "-h" ++ reset ++ " for more information.\n");
+            return;
+        },
+        error.NoArgument => {
+            try ArgumentParser.displayUsage();
+            return;
+        },
+        else => {
+            try stdout.writeAll("An unknown error ocurred.\n");
+            return;
+        },
+    };
     defer ArgumentParser.deinit(args);
 
     if (args.help) {
@@ -35,7 +56,7 @@ const ArgumentParser = argparse.ArgumentParser(.{
         .long = "--input",
         .short = "-i",
         .description = "Input file name",
-        .metavar = "<FILE>",
+        .metavar = "<FILE> [FILE...]",
         .argument_type = []const u8,
         .takes = .Many,
     },
@@ -53,9 +74,9 @@ const ArgumentParser = argparse.ArgumentParser(.{
         .long = "--index",
         .short = "-x",
         .description = "Index file name (Default: mdtools.x)",
-        .metavar = "<FILE>",
+        .metavar = "<FILE> [FILE...]",
         .argument_type = []const u8,
-        .takes = .One,
+        .takes = .Many,
     },
     .{
         .name = "version",
