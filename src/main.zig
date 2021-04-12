@@ -7,7 +7,7 @@ const argparse = @import("argparse.zig");
 
 const reset = ansi.reset;
 const bold = ansi.txt_bold;
-const green = ansi.fg_green;
+const green = ansi.txt_fg_green;
 
 pub fn main() anyerror!void {
     // Initialize allocator

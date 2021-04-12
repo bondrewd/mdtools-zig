@@ -13,10 +13,10 @@ const Declaration = TypeInfo.Declaration;
 
 const reset = ansi.reset;
 const bold = ansi.txt_bold;
-const red = ansi.fg_red;
-const blue = ansi.fg_blue;
-const green = ansi.fg_green;
-const yellow = ansi.fg_yellow;
+const red = ansi.txt_fg_red;
+const blue = ansi.txt_fg_blue;
+const green = ansi.txt_fg_green;
+const yellow = ansi.txt_fg_yellow;
 
 pub const ParserConfig = struct {
     bin_name: []const u8,
