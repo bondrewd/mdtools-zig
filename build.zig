@@ -1,22 +1,43 @@
+const std = @import("std");
 const Builder = @import("std").build.Builder;
 
-pub fn build(b: *Builder) void {
-    // Standard target options allows the person running `zig build` to choose
-    // what target to build for. Here we do not override the defaults, which
-    // means any target is allowed, and the default is native. Other options
-    // for restricting supported target set are available.
-    const target = b.standardTargetOptions(.{});
-
-    // Standard release options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
+pub fn build(b: *Builder) !void {
+    // Get default release mode
     const mode = b.standardReleaseOptions();
+    // Get default build target
+    const target = b.standardTargetOptions(.{});
+    // Build options
+    const ncurses = b.option(bool, "ncurses", "Build ncurses gui. Requires ncurses library installed") orelse false;
+    const precision = b.option([]const u8, "precision", "mdtools working precision between f32 and f64 (Default: f32)") orelse "f32";
 
+    // Create binary
     const exe = b.addExecutable("mdtools", "src/main.zig");
+    // Configure binary
     exe.setTarget(target);
     exe.setBuildMode(mode);
-    exe.linkSystemLibrary("ncurses");
-    exe.linkLibC();
+
+    // Link ncurses library
+    if (ncurses) {
+        exe.addBuildOption(bool, "enable_ncurses", ncurses);
+        exe.linkSystemLibrary("ncurses");
+        exe.linkLibC();
+    }
+
+    // Binary precision
+    if (std.mem.eql(u8, precision, "f32")) {
+        exe.addBuildOption(type, "working_precision", f32);
+    } else if (std.mem.eql(u8, precision, "f64")) {
+        exe.addBuildOption(type, "working_precision", f64);
+    } else {
+        const stdout = std.io.getStdOut().writer();
+        try stdout.print("Error: Expected precision 'f32' or 'f64', found '{s}'\n", .{precision});
+        std.os.exit(0);
+    }
+
+    // Set output directory
     exe.setOutputDir("./bin");
+
+    // Install binary
     exe.install();
 
     const run_cmd = exe.run();
