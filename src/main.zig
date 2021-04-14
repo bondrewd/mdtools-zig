@@ -3,7 +3,7 @@ const fs = std.fs;
 const pdb = @import("pdb.zig");
 const ansi = @import("ansi.zig");
 const config = @import("config.zig");
-const argparse = @import("argparse.zig");
+const parser = @import("parser.zig");
 
 const reset = ansi.reset;
 const bold = ansi.txt_bold;
@@ -45,13 +45,13 @@ pub fn main() anyerror!void {
     }
 }
 
-const ArgumentParser = argparse.ArgumentParser(.{
+const ArgumentParser = parser.ArgumentParser(.{
     .bin_name = "mdtools",
     .bin_info = "Tools for manipulating Molecular Dynamics (MD) files.",
     .bin_usage = "./mdtools OPTION [OPTION...]",
     .bin_version = .{ .major = 0, .minor = 1, .patch = 0 },
     .display_help = true,
-}, &[_]argparse.ParserOption{
+}, &[_]parser.ArgumentParserOption{
     .{
         .name = "input",
         .long = "--input",
