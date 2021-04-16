@@ -1,8 +1,5 @@
 const std = @import("std");
-const fs = std.fs;
-const pdb = @import("pdb.zig");
 const ansi = @import("ansi.zig");
-const config = @import("config.zig");
 const parser = @import("parser.zig");
 
 const reset = ansi.reset;
