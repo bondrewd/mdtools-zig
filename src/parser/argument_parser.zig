@@ -74,7 +74,11 @@ pub fn ArgumentParser(comptime config: ParserConfig, comptime options: []const A
             inline for (options) |option| {
                 const long = option.long orelse "";
                 const short = option.short orelse "  ";
-                const metavar = option.metavar orelse "";
+                const metavar = option.metavar orelse switch (option.takes) {
+                    .None => "",
+                    .One => "<ARG>",
+                    .Many => "<ARG> [ARG...]",
+                };
                 const separator = if (option.short != null) (if (option.long != null) ", " else "") else "  ";
                 if (option.short == null and option.long == null) @compileError("Option must have defined at least short or long");
 

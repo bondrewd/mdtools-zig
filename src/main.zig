@@ -1,6 +1,7 @@
 const std = @import("std");
 const ansi = @import("ansi.zig");
 const parser = @import("parser.zig");
+const Universe = @import("universe.zig").Universe;
 
 const reset = ansi.reset;
 const bold = ansi.txt_bold;
@@ -15,6 +16,7 @@ pub fn main() anyerror!void {
     // Get std out writer
     const stdout = std.io.getStdOut().writer();
 
+    // Parse arguments
     var args = ArgumentParser.parse(allocator) catch |err| switch (err) {
         error.OptionAppearsTwoTimes, error.MissingArgument, error.UnknownArgument => {
             try stdout.writeAll("Try " ++ bold ++ green ++ "-h" ++ reset ++ " for more information.\n");
@@ -31,14 +33,34 @@ pub fn main() anyerror!void {
     };
     defer ArgumentParser.deinit(args);
 
+    // Print help menu if requested, and exit
     if (args.help) {
         try ArgumentParser.displayUsage();
         return;
     }
 
+    // Print version if requested, and exit
     if (args.version) {
         try ArgumentParser.displayVersion();
         return;
+    }
+
+    // Create universe
+    var universe = Universe.init(allocator);
+    defer universe.deinit();
+
+    // Load files
+    for (args.input.items) |file_path| try universe.loadFile(file_path);
+
+    // Write files
+    for (args.output.items) |file_path| try universe.addWriter(file_path);
+
+    // Iterate over the trajectory
+    while (true) {
+        try universe.write();
+
+        if (universe.trajectory.n_frames == universe.trajectory.frame) break;
+        try universe.readNextFrame();
     }
 }
 
@@ -53,7 +75,10 @@ const ArgumentParser = parser.ArgumentParser(.{
         .name = "input",
         .long = "--input",
         .short = "-i",
-        .description = "Input file name",
+        .description = 
+        \\Input file name(s). Supported formats are PDB, GRO, DCD, XTC, TRR, PSF,
+        \\        and TOP (Required!)
+        ,
         .metavar = "<FILE> [FILE...]",
         .argument_type = []const u8,
         .takes = .Many,
@@ -62,17 +87,33 @@ const ArgumentParser = parser.ArgumentParser(.{
         .name = "output",
         .long = "--output",
         .short = "-o",
-        .description = "Output file name (Default: mdtools.out)",
-        .metavar = "<FILE>",
+        .description = 
+        \\Output file name(s). Supported formats are PDB, GRO, DCD, XTC, TRR, PSF,
+        \\        and TOP (Required!)
+        ,
+        .metavar = "<FILE> [FILE...]",
         .argument_type = []const u8,
-        .takes = .One,
+        .takes = .Many,
     },
     .{
-        .name = "index",
-        .long = "--index",
-        .short = "-x",
-        .description = "Index file name (Default: mdtools.x)",
-        .metavar = "<FILE> [FILE...]",
+        .name = "apply_pbc",
+        .long = "--apply-pbc",
+        .description = 
+        \\Apply PBC to all the particles in the system. If an index file is given,
+        \\        then apply PBC to selection(s) (Default: all)
+        ,
+        .metavar = "[SELECTION...]",
+        .argument_type = []const u8,
+        .takes = .Many,
+    },
+    .{
+        .name = "remove_pbc",
+        .long = "--remove-pbc",
+        .description = 
+        \\Remove PBC from all the particles in the system. If an index file is
+        \\        given, then remove PBC from selection(s) (Default: all)
+        ,
+        .metavar = "[SELECTION...]",
         .argument_type = []const u8,
         .takes = .Many,
     },
