@@ -57,6 +57,9 @@ pub fn main() anyerror!void {
 
     // Iterate over the trajectory
     while (true) {
+        // Apply periodic boundary conditions
+        if (args.apply_pbc) universe.applyPbc();
+
         try universe.write();
 
         if (universe.trajectory.n_frames == universe.trajectory.frame) break;
@@ -75,10 +78,7 @@ const ArgumentParser = parser.ArgumentParser(.{
         .name = "input",
         .long = "--input",
         .short = "-i",
-        .description = 
-        \\Input file name(s). Supported formats are PDB, GRO, DCD, XTC, TRR, PSF,
-        \\        and TOP (Required!)
-        ,
+        .description = "Input file name",
         .metavar = "<FILE> [FILE...]",
         .argument_type = []const u8,
         .takes = .Many,
@@ -87,10 +87,7 @@ const ArgumentParser = parser.ArgumentParser(.{
         .name = "output",
         .long = "--output",
         .short = "-o",
-        .description = 
-        \\Output file name(s). Supported formats are PDB, GRO, DCD, XTC, TRR, PSF,
-        \\        and TOP (Required!)
-        ,
+        .description = "Output file name",
         .metavar = "<FILE> [FILE...]",
         .argument_type = []const u8,
         .takes = .Many,
@@ -98,24 +95,8 @@ const ArgumentParser = parser.ArgumentParser(.{
     .{
         .name = "apply_pbc",
         .long = "--apply-pbc",
-        .description = 
-        \\Apply PBC to all the particles in the system. If an index file is given,
-        \\        then apply PBC to selection(s) (Default: all)
-        ,
-        .metavar = "[SELECTION...]",
-        .argument_type = []const u8,
-        .takes = .Many,
-    },
-    .{
-        .name = "remove_pbc",
-        .long = "--remove-pbc",
-        .description = 
-        \\Remove PBC from all the particles in the system. If an index file is
-        \\        given, then remove PBC from selection(s) (Default: all)
-        ,
-        .metavar = "[SELECTION...]",
-        .argument_type = []const u8,
-        .takes = .Many,
+        .description = "Apply PBC to all the particles in the system",
+        .argument_type = bool,
     },
     .{
         .name = "version",
