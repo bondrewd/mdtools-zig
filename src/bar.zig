@@ -22,8 +22,8 @@ pub const ProgressBar = struct {
         return .{
             .writer = w,
             .fill = config.fill orelse "▒",
-            .r_sep = config.r_sep orelse "▕",
-            .l_sep = config.r_sep orelse "▏",
+            .r_sep = config.r_sep orelse "|",
+            .l_sep = config.r_sep orelse "|",
             .blocks = config.blocks orelse &[_][]const u8{ " ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█" },
             .length = config.length orelse 25,
         };
