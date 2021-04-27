@@ -2,6 +2,7 @@ const std = @import("std");
 const ansi = @import("ansi.zig");
 const parser = @import("parser.zig");
 const Universe = @import("universe.zig").Universe;
+const ProgressBar = @import("bar.zig").ProgressBar;
 
 const reset = ansi.reset;
 const bold = ansi.txt_bold;
@@ -15,6 +16,9 @@ pub fn main() anyerror!void {
 
     // Get std out writer
     const stdout = std.io.getStdOut().writer();
+
+    // Get progress bar
+    const progress_bar = ProgressBar.init(stdout, .{});
 
     // Parse arguments
     var args = ArgumentParser.parse(allocator) catch |err| switch (err) {
@@ -56,7 +60,10 @@ pub fn main() anyerror!void {
     for (args.output.items) |file_path| try universe.addWriter(file_path);
 
     // Iterate over the trajectory
+    var i: u32 = 0;
     while (true) {
+        try progress_bar.write(i, 0, 100);
+        i += 1;
         // Apply periodic boundary conditions
         if (args.apply_pbc) universe.applyPbc();
 

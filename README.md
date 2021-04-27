@@ -6,7 +6,7 @@ super computers.
 
 ### TODO
 
-- [ ] Implement progress bar
+- [x] Implement progress bar
 - [ ] Implement frame selection
 - [ ] Implement indexing
 - [ ] Implement readers and writers
