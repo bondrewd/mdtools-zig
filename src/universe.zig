@@ -155,9 +155,9 @@ pub const Universe = struct {
         try self.readNextFrame();
     }
 
-    fn loadTrajectoryXTC(self: *Self, file_path: []const u8) !void {}
+    //fn loadTrajectoryXTC(self: *Self, file_path: []const u8) !void {}
 
-    fn loadTrajectoryTRR(self: *Self, file_path: []const u8) !void {}
+    //fn loadTrajectoryTRR(self: *Self, file_path: []const u8) !void {}
 
     pub fn readNextFrame(self: *Self) !void {
         if (self.trajectory.frame == self.trajectory.n_frames) return;
@@ -165,8 +165,8 @@ pub const Universe = struct {
         for (self.readers.items) |*r| {
             switch (r.format) {
                 .DCD => try r.readNextFrameDCD(),
-                .XTC => try r.readNextFrameXTC(),
-                .TRR => try r.readNextFrameTRR(),
+                //.XTC => try r.readNextFrameXTC(),
+                //.TRR => try r.readNextFrameTRR(),
                 else => return,
             }
         }
@@ -200,10 +200,10 @@ pub const Universe = struct {
             if (block_s != 48) return error.BlockSizeMissmatch;
 
             const box_x = @bitCast(f64, try self.reader.readBytesNoEof(8)); // x
-            const box_g = @bitCast(f64, try self.reader.readBytesNoEof(8)); // gamma
+            //const box_g = @bitCast(f64, try self.reader.readBytesNoEof(8)); // gamma
             const box_y = @bitCast(f64, try self.reader.readBytesNoEof(8)); // y
-            const box_b = @bitCast(f64, try self.reader.readBytesNoEof(8)); // beta
-            const box_a = @bitCast(f64, try self.reader.readBytesNoEof(8)); // alpha
+            //const box_b = @bitCast(f64, try self.reader.readBytesNoEof(8)); // beta
+            //const box_a = @bitCast(f64, try self.reader.readBytesNoEof(8)); // alpha
             const box_z = @bitCast(f64, try self.reader.readBytesNoEof(8)); // z
 
             self.universe.box[0] = .{ @floatCast(f32, box_x), 0, 0 };
@@ -226,9 +226,9 @@ pub const Universe = struct {
             }
         }
 
-        fn readNextFrameXTC(self: *Reader) !void {}
+        //fn readNextFrameXTC(self: *Reader) !void {}
 
-        fn readNextFrameTRR(self: *Reader) !void {}
+        //fn readNextFrameTRR(self: *Reader) !void {}
     };
 
     pub fn addWriter(self: *Self, file_path: []const u8) !void {
@@ -402,8 +402,8 @@ pub const Universe = struct {
         for (self.writers.items) |*w| {
             switch (w.format) {
                 .DCD => try w.writeFrameDCD(),
-                .XTC => try w.writeFrameXTC(),
-                .TRR => try w.writeFrameTRR(),
+                //.XTC => try w.writeFrameXTC(),
+                //.TRR => try w.writeFrameTRR(),
                 else => return,
             }
         }
@@ -454,9 +454,9 @@ pub const Universe = struct {
             }
         }
 
-        fn writeFrameXTC(self: *Writer) !void {}
+        //fn writeFrameXTC(self: *Writer) !void {}
 
-        fn writeFrameTRR(self: *Writer) !void {}
+        //fn writeFrameTRR(self: *Writer) !void {}
     };
 
     pub fn applyPbc(self: *Self) void {
