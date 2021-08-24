@@ -11,7 +11,7 @@ pub fn build(b: *Builder) !void {
     const precision = b.option([]const u8, "precision", "mdtools working precision between f32 and f64 (Default: f32)") orelse "f32";
 
     // Create binary
-    const exe = b.addExecutable("mdtools", "src/main.zig");
+    const exe = b.addExecutable("mdtools", "src/mdtools.zig");
     // Configure binary
     exe.setTarget(target);
     exe.setBuildMode(mode);
