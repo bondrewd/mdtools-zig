@@ -1,0 +1,3 @@
+[submodule "lib/argparse-zig"]
+	path = lib/argparse-zig
+	url = git@github.com:bondrewd/argparse-zig.git
