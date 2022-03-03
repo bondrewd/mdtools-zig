@@ -1,7 +1,7 @@
 const std = @import("std");
+const Allocator = std.mem.Allocator;
 
 pub const ProgressBar = struct {
-    writer: std.fs.File.Writer,
     fill: []const u8,
     r_sep: []const u8,
     l_sep: []const u8,
@@ -18,9 +18,8 @@ pub const ProgressBar = struct {
         length: ?u8 = null,
     };
 
-    pub fn init(w: std.fs.File.Writer, config: ProgressBarConfig) Self {
+    pub fn init(config: ProgressBarConfig) Self {
         return .{
-            .writer = w,
             .fill = config.fill orelse "▒",
             .r_sep = config.r_sep orelse "|",
             .l_sep = config.r_sep orelse "|",
@@ -29,7 +28,7 @@ pub const ProgressBar = struct {
         };
     }
 
-    pub fn write(self: Self, value: u32, min: u32, max: u32) !void {
+    pub fn displayProgressWriter(self: Self, value: u32, min: u32, max: u32, writer: anytype) !void {
         var v = value;
         v = if (v > min) v else min;
         v = if (v < max) v else max;
@@ -41,23 +40,25 @@ pub const ProgressBar = struct {
         const y = @floatToInt(u32, @floor(n * (l - @intToFloat(f32, x))));
 
         // Carriage return
-        try self.writer.writeByte('\r');
+        try writer.writeByte('\r');
         // Write left part
-        try self.writer.writeAll(self.l_sep);
+        try writer.writeAll(self.l_sep);
         // Write middle part
         var i: usize = 0;
         while (i < self.length) : (i += 1) {
             if (i < x) {
-                try self.writer.writeAll(self.blocks[self.blocks.len - 1]);
+                try writer.writeAll(self.blocks[self.blocks.len - 1]);
             } else if (i == x) {
-                try self.writer.writeAll(self.blocks[y]);
+                try writer.writeAll(self.blocks[y]);
             } else {
-                try self.writer.writeAll(self.fill);
+                try writer.writeAll(self.fill);
             }
         }
         // Write right part
-        try self.writer.writeAll(self.r_sep);
+        try writer.writeAll(self.r_sep);
         // Write percentage
-        try self.writer.print(" {d:6.2}%", .{p * 100});
+        try writer.print(" {d:6.2}%", .{p * 100});
+        // Write new line
+        if (v == max) try writer.writeByte('\n');
     }
 };

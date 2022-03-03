@@ -15,9 +15,6 @@ pub fn build(b: *Builder) !void {
     exe.setTarget(target);
     exe.setBuildMode(mode);
 
-    // Set output directory
-    exe.setOutputDir("./bin");
-
     // Install binary
     exe.install();
 

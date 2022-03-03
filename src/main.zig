@@ -1,6 +1,6 @@
 const std = @import("std");
 //const Universe = @import("universe.zig").Universe;
-const ProgressBar = @import("bar.zig").ProgressBar;
+const ProgressBar = @import("progress_bar.zig").ProgressBar;
 
 const ArgumentParser = @import("argument_parser.zig").ArgumentParser;
 
@@ -12,15 +12,14 @@ pub fn main() anyerror!void {
 
     // Get Arguments
     var args = try ArgumentParser.parseArgumentsAllocator(allocator);
-
-    // Get std out writer
-    //const stdout = std.io.getStdOut().writer();
-
-    // Get progress bar
-    //const progress_bar = ProgressBar.init(stdout, .{});
-
     std.debug.print("input: {s}\n", .{args.input});
     std.debug.print("output: {s}\n", .{args.output});
+
+    // Get stdout
+    const stdout = std.io.getStdOut().writer();
+
+    // Get progress bar
+    const progress_bar = ProgressBar.init(.{});
 
     // Create universe
     //var universe = Universe.init(allocator);
@@ -33,16 +32,15 @@ pub fn main() anyerror!void {
     //for (args.output.items) |file_path| try universe.addWriter(file_path);
 
     // Iterate over the trajectory
-    //var i: u32 = 0;
-    //while (true) {
-    //try progress_bar.write(i, 0, 100);
-    //i += 1;
-    // Apply periodic boundary conditions
-    //if (args.apply_pbc) universe.applyPbc();
+    var i: u32 = 0;
+    while (i <= 100) : (i += 1) {
+        try progress_bar.displayProgressWriter(i, 0, 100, stdout);
+        // Apply periodic boundary conditions
+        //if (args.apply_pbc) universe.applyPbc();
 
-    //try universe.write();
+        //try universe.write();
 
-    //if (universe.trajectory.n_frames == universe.trajectory.frame) break;
-    //try universe.readNextFrame();
-    //}
+        //if (universe.trajectory.n_frames == universe.trajectory.frame) break;
+        //try universe.readNextFrame();
+    }
 }
