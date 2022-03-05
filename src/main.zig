@@ -11,7 +11,7 @@ pub fn main() anyerror!void {
     var allocator = arena.allocator();
 
     // Get Arguments
-    var args = try ArgumentParser.parseArgumentsAllocator(allocator);
+    var args = ArgumentParser.parseArgumentsAllocator(allocator) catch return;
     std.debug.print("input: {s}\n", .{args.input});
     std.debug.print("output: {s}\n", .{args.output});
 
