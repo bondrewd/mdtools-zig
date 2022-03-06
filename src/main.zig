@@ -12,6 +12,8 @@ pub fn main() anyerror!void {
 
     // Get Arguments
     var args = ArgumentParser.parseArgumentsAllocator(allocator) catch return;
+    defer ArgumentParser.deinitArgs(args);
+
     std.debug.print("input: {s}\n", .{args.input});
     std.debug.print("output: {s}\n", .{args.output});
 
